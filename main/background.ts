@@ -1,6 +1,6 @@
 import { exec, execSync } from 'child_process'
 import path from 'path'
-import { app, ipcMain } from 'electron'
+import { app, ipcMain, dialog } from 'electron'
 // import serve from 'electron-serve'
 import { createWindow } from './helpers'
 
@@ -38,14 +38,11 @@ app.on('window-all-closed', () => {
 
 function isProcessRunningByPath(targetPath: string) {
   try {
-    targetPath = path.normalize(targetPath).toLowerCase()
+    const newPath = (targetPath = path.normalize(targetPath).toLowerCase())
 
     // Windows: 실행 중인 프로세스의 실행 경로 확인
     const output = execSync(`wmic process get ExecutablePath`).toString()
-    return output
-      .toLowerCase()
-      .split('\n')
-      .some((line) => line.trim() === targetPath)
+    return output.toLowerCase().includes(newPath)
   } catch (error) {
     console.error('프로세스 확인 중 오류 발생:', error)
     return false
@@ -56,6 +53,12 @@ function isProcessRunningByPath(targetPath: string) {
 ipcMain.handle('run-file', async (_, filePath: string) => {
   return new Promise((resolve, reject) => {
     if (isProcessRunningByPath(filePath)) {
+      dialog.showMessageBox({
+        type: 'warning',
+        title: '프로그램 실행 중',
+        message: '이미 실행 중입니다.',
+        buttons: ['확인'],
+      })
       resolve('이미 실행 중입니다.')
       return
     }
