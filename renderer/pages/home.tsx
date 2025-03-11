@@ -16,7 +16,7 @@ export default function HomePage() {
   const runFile = async () => {
     try {
       // 실행할 파일 경로 (예제: Windows의 메모장 실행)
-      const filePath = 'C:\\User\\metazone\\Desktop\\electron.txt'
+      const filePath = 'C:\\Users\\metazone\\Desktop\\electron.txt'
 
       if (window.electronAPI) {
         console.log('electronAPI is exist')
