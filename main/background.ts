@@ -50,7 +50,7 @@ function isProcessRunningByPath(targetPath: string) {
 }
 
 // ✅ 특정 경로의 파일 실행 (Windows 기준: .exe, macOS/Linux: 실행 가능한 파일)
-ipcMain.handle('run-file', async (_, filePath: string) => {
+ipcMain.handle('run-file', async (_, filePath: string, filePath2?: string) => {
   return new Promise((resolve, reject) => {
     if (isProcessRunningByPath(filePath)) {
       dialog.showMessageBox({
@@ -63,13 +63,16 @@ ipcMain.handle('run-file', async (_, filePath: string) => {
       return
     }
 
-    exec(`start "" ${filePath}`, (error, stdout, stderr) => {
-      if (error) {
-        reject(error.message)
-      } else {
-        resolve(stdout || stderr)
+    exec(
+      `start "" ${filePath} & start "" ${filePath2}`,
+      (error, stdout, stderr) => {
+        if (error) {
+          reject(error.message)
+        } else {
+          resolve(stdout || stderr)
+        }
       }
-    })
+    )
   })
 })
 
