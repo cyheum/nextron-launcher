@@ -49,31 +49,60 @@ function isProcessRunningByPath(targetPath: string) {
   }
 }
 
+function runFile(filePath: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const command = `start "" ${filePath}`
+    console.log(`실행 명령어: ${command}`)
+    exec(command, (error) => {
+      if (error) {
+        reject(`❌ 실행 실패: ${filePath}, 오류: ${error.message}`)
+      } else {
+        resolve(`✅ 실행 완료: ${filePath}`)
+      }
+    })
+  })
+}
+
 // ✅ 특정 경로의 파일 실행 (Windows 기준: .exe, macOS/Linux: 실행 가능한 파일)
 ipcMain.handle('run-file', async (_, filePath: string, filePath2?: string) => {
-  return new Promise((resolve, reject) => {
-    if (isProcessRunningByPath(filePath)) {
-      dialog.showMessageBox({
-        type: 'warning',
-        title: '프로그램 실행 중',
-        message: '이미 실행 중입니다.',
-        buttons: ['확인'],
-      })
-      resolve('이미 실행 중입니다.')
-      return
+  if (isProcessRunningByPath(filePath)) {
+    dialog.showMessageBox({
+      type: 'warning',
+      title: '프로그램 실행 중',
+      message: '이미 실행 중입니다.',
+      buttons: ['확인'],
+    })
+    return '이미 실행 중입니다.'
+  }
+
+  try {
+    // 첫 번째 파일 실행
+    const result1 = await runFile(filePath)
+    let result2 = ''
+
+    // 두 번째 파일이 있으면 실행
+    if (filePath2) {
+      result2 = await runFile(filePath2)
     }
 
-    exec(
-      `start "" ${filePath} & start "" ${filePath2}`,
-      (error, stdout, stderr) => {
-        if (error) {
-          reject(error.message)
-        } else {
-          resolve(stdout || stderr)
-        }
-      }
-    )
-  })
+    return `${result1}\n${result2}`
+  } catch (error) {
+    return error
+  }
+
+  // return new Promise((resolve, reject) => {
+
+  //   exec(
+  //     `start "" ${filePath} & start "" ${filePath2}`,
+  //     (error, stdout, stderr) => {
+  //       if (error) {
+  //         reject(error.message)
+  //       } else {
+  //         resolve(stdout || stderr)
+  //       }
+  //     }
+  //   )
+  // })
 })
 
 ipcMain.on('message', async (event, arg) => {
