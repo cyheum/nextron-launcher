@@ -64,10 +64,7 @@ function runFile(filePath: string): Promise<string> {
 }
 
 // ✅ 특정 경로의 파일 실행 (Windows 기준: .exe, macOS/Linux: 실행 가능한 파일)
-ipcMain.handle('run-file', async (_, path: string[]) => {
-  const filePath = path[0]
-  const filePath2 = path[1]
-
+ipcMain.handle('run-file', async (_, filePath: string) => {
   if (isProcessRunningByPath(filePath)) {
     dialog.showMessageBox({
       type: 'warning',
@@ -81,14 +78,8 @@ ipcMain.handle('run-file', async (_, path: string[]) => {
   try {
     // 첫 번째 파일 실행
     const result1 = await runFile(filePath)
-    let result2 = ''
 
-    // 두 번째 파일이 있으면 실행
-    if (filePath2) {
-      result2 = await runFile(filePath2)
-    }
-
-    return `${result1}\n${result2}`
+    return `${result1}`
   } catch (error) {
     return error
   }
