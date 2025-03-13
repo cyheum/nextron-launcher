@@ -52,7 +52,6 @@ function isProcessRunningByPath(targetPath: string) {
 function runFile(filePath: string): Promise<string> {
   return new Promise((resolve, reject) => {
     const command = `start "" ${filePath}`
-    console.log(`실행 명령어: ${command}`)
     exec(command, (error) => {
       if (error) {
         reject(`❌ 실행 실패: ${filePath}, 오류: ${error.message}`)
@@ -65,7 +64,8 @@ function runFile(filePath: string): Promise<string> {
 
 // ✅ 특정 경로의 파일 실행 (Windows 기준: .exe, macOS/Linux: 실행 가능한 파일)
 ipcMain.handle('run-file', async (_, filePath: string) => {
-  if (isProcessRunningByPath(filePath)) {
+  const path1 = filePath.split(' & ')[0]
+  if (isProcessRunningByPath(path1)) {
     dialog.showMessageBox({
       type: 'warning',
       title: '프로그램 실행 중',
